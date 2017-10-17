@@ -1,24 +1,42 @@
-# This is a template for a Python scraper on morph.io (https://morph.io)
-# including some code snippets below that you should find helpful
+# coding=utf-8
 
-# import scraperwiki
-# import lxml.html
-#
-# # Read in a page
-# html = scraperwiki.scrape("http://foo.com")
-#
-# # Find something on the page using css selectors
-# root = lxml.html.fromstring(html)
-# root.cssselect("div[align='left']")
-#
-# # Write out to the sqlite database using scraperwiki library
-# scraperwiki.sqlite.save(unique_keys=['name'], data={"name": "susan", "occupation": "software developer"})
-#
-# # An arbitrary query against the database
-# scraperwiki.sql.select("* from data where 'name'='peter'")
+import scraperwiki
+import lxml.html
+import sqlite3
 
-# You don't have to do things with the ScraperWiki and lxml libraries.
-# You can use whatever libraries you want: https://morph.io/documentation/python
-# All that matters is that your final data is written to an SQLite database
-# called "data.sqlite" in the current working directory which has at least a table
-# called "data".
+BASE_URL = 'http://www.hcdmza.gob.ar/web/institucional/bloques.html'
+
+html = scraperwiki.scrape(BASE_URL)
+ssRoot = lxml.html.fromstring(html)
+
+# There seems to be a broken slideshow, but it contains useful data!
+members = ssRoot.cssselect('div.camera_caption')
+parsedMembers = []
+
+for member in members:
+
+    memberData = {}
+
+    memberData['name'] = member.cssselect('div.camera_caption_title')[0].text.strip()
+
+    details = member.cssselect('div.camera_caption_desc')[0].text.strip()
+
+    detailParts = details.split('-')
+
+    memberData['party'] = detailParts[0].strip().replace('Bloque ', '')
+
+    memberData['district'] = detailParts[1].strip()
+
+    print memberData
+
+    parsedMembers.append(memberData)
+
+print 'Counted {} Members'.format(len(parsedMembers))
+
+try:
+    scraperwiki.sqlite.execute('DELETE FROM data')
+except sqlite3.OperationalError:
+    pass
+scraperwiki.sqlite.save(
+    unique_keys=['name'],
+    data=parsedMembers)
