@@ -3,6 +3,7 @@
 import scraperwiki
 import lxml.html
 import sqlite3
+import re
 
 BASE_URL = 'http://www.hcdmza.gob.ar/web/institucional/bloques.html'
 
@@ -21,6 +22,11 @@ for member in members:
 
     details = member.cssselect('div.camera_caption_desc')[0].text.strip()
 
+    url = member.getparent().attrib['data-link']
+
+    idRegex = re.search('\/([0-9]*)-.*', url)
+    memberData['id'] = idRegex.group(1)
+
     detailParts = details.split('-')
 
     memberData['party'] = detailParts[0].strip().replace('Bloque ', '')
@@ -38,5 +44,5 @@ try:
 except sqlite3.OperationalError:
     pass
 scraperwiki.sqlite.save(
-    unique_keys=['name'],
+    unique_keys=['id'],
     data=parsedMembers)
