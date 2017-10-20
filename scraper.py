@@ -10,6 +10,17 @@ BASE_URL = 'http://www.hcdmza.gob.ar/web/institucional/bloques.html'
 html = scraperwiki.scrape(BASE_URL)
 ssRoot = lxml.html.fromstring(html)
 
+PARTY_MAP = {
+    'UCR': u'Unión Cívica Radical',
+    'PJ': 'Partido Justicialista',
+    'PTS-FIT': 'Partido de los Trabajadores Socialistas/FIT',
+    'FIT-PTS': 'Partido de los Trabajadores Socialistas/FIT',
+    'FIT': 'FIT',
+    'PD': u'Partido Demócrata',
+    'FR': 'Frente Renovador',
+    'PRO': 'PRO'
+}
+
 # There seems to be a broken slideshow, but it contains useful data!
 members = ssRoot.cssselect('div.camera_caption')
 parsedMembers = []
@@ -29,7 +40,7 @@ for member in members:
 
     detailParts = details.rsplit('-', 1)
 
-    memberData['party'] = detailParts[0].strip().replace('Bloque ', '')
+    memberData['party'] = PARTY_MAP[detailParts[0].strip().replace('Bloque ', '')]
 
     memberData['district'] = detailParts[1].strip()
 
