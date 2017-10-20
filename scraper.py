@@ -27,7 +27,7 @@ for member in members:
     idRegex = re.search('\/([0-9]*)-.*', url)
     memberData['id'] = idRegex.group(1)
 
-    detailParts = details.split('-')
+    detailParts = details.rsplit('-', 1)
 
     memberData['party'] = detailParts[0].strip().replace('Bloque ', '')
 
